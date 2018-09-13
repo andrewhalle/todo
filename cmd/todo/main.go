@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/urfave/cli"
 )
@@ -23,6 +24,11 @@ func main() {
 			Usage:  "add a task",
 			Action: add,
 		},
+		{
+			Name: "init",
+			Usage: "initialize empty .todo directory",
+			Action: todoInit,
+		},
 	}
 
 	err := app.Run(os.Args)
@@ -32,8 +38,44 @@ func main() {
 }
 
 /****************************
+*      Helper functions     *
+*****************************/
+
+func todoDirectoryPath(path string) string {
+	return path + string(filepath.Separator) + ".todo"
+}
+
+func todoDirectoryExists(path string) bool {
+	_, err := os.Stat(todoDirectoryPath(path))
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
+
+func initTodoDirectory(path string) error {
+	if !todoDirectoryExists(path) {
+		os.Mkdir(todoDirectoryPath(path), 0600)
+		return nil
+	}
+	// figure out how to return a useful error
+	return nil
+}
+
+/****************************
 *      Action functions     *
 *****************************/
+
+func todoInit(c *cli.Context) error {
+	wd, _ := os.Getwd()
+	err := initTodoDirectory(wd)
+	if err != nil {
+		fmt.Println("Todo directory already initialized in this location!")
+		return err
+	}
+	return nil
+}
 
 func list(c *cli.Context) error {
 	fmt.Println("You're all done!")
