@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"errors"
 	"path/filepath"
 
 	"github.com/urfave/cli"
@@ -59,8 +60,7 @@ func initTodoDirectory(path string) error {
 		os.Mkdir(todoDirectoryPath(path), 0600)
 		return nil
 	}
-	// figure out how to return a useful error
-	return nil
+	return errors.New("the todo directory has already been initialized!")
 }
 
 /****************************
@@ -71,7 +71,6 @@ func todoInit(c *cli.Context) error {
 	wd, _ := os.Getwd()
 	err := initTodoDirectory(wd)
 	if err != nil {
-		fmt.Println("Todo directory already initialized in this location!")
 		return err
 	}
 	return nil
