@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/urfave/cli"
+	"github.com/andrewhalle/todo/task"
 )
 
 func main() {
@@ -57,10 +58,14 @@ func todoDirectoryExists(path string) bool {
 
 func initTodoDirectory(path string) error {
 	if !todoDirectoryExists(path) {
-		os.Mkdir(todoDirectoryPath(path), 0600)
+		os.Mkdir(todoDirectoryPath(path), 0644)
 		return nil
 	}
 	return errors.New("the todo directory has already been initialized!")
+}
+
+func taskName(dir string, uuid string) string {
+	return dir + string(filepath.Separator) + uuid + ".task"
 }
 
 /****************************
@@ -82,6 +87,13 @@ func list(c *cli.Context) error {
 }
 
 func add(c *cli.Context) error {
-	fmt.Println("Can't do that right now.")
+	wd, _ := os.Getwd()
+	dir := todoDirectoryPath(wd)
+	t := task.Task{
+		Name: "added task",
+		TimeToComplete: 1,
+		Priority: 1,
+	}
+	t.Save(taskName(dir, "test"))
 	return nil
 }
