@@ -114,7 +114,15 @@ func clean(c *cli.Context) error {
 }
 
 func list(c *cli.Context) error {
-	fmt.Println("You're all done!")
+	wd, _ := os.Getwd()
+	dir := todoDirectoryPath(wd)
+	tasks := task.FromDir(dir)
+	for _, t := range tasks {
+		fmt.Println("Name: ", t.Name)
+		fmt.Println("Time to Complete: ", t.TimeToComplete)
+		fmt.Println("Priority: ", t.Priority)
+		fmt.Println("")
+	}
 	return nil
 }
 

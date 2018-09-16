@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"log"
+	"os"
+	"path/filepath"
 )
 
 type Task struct {
@@ -31,5 +33,16 @@ func Load(filename string) *Task {
 	err = json.Unmarshal(b, &t)
 	check(err)
 	return &t
+}
+
+func FromDir(dir string) []*Task {
+	dirFile, err := os.Open(dir)
+	check(err)
+	taskFilenames, err := dirFile.Readdirnames(-1)
+	tasks := make([]*Task, 0, len(taskFilenames))
+	for _, filename := range taskFilenames {
+		tasks = append(tasks, Load(dir + string(filepath.Separator) + filename))
+	}
+	return tasks
 }
 
