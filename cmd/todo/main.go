@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"errors"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/urfave/cli"
 	"github.com/andrewhalle/todo/task"
@@ -48,6 +51,25 @@ func main() {
 /****************************
 *      Helper functions     *
 *****************************/
+
+func getTermSize() (int, int) {
+	cmd := exec.Command("stty", "size")
+	cmd.Stdin = os.Stdin
+	output, _ := cmd.Output()
+	stty_output := strings.Split(strings.TrimSpace(string(output)), " ")
+	sizes := make([]int, 2)
+	for i, size := range stty_output {
+		sizes[i], _ = strconv.Atoi(size)
+	}
+	return sizes[0], sizes[1]
+}
+
+func clearTerm() {
+	cmd := exec.Command("tput", "clear")
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+	cmd.Run()
+}
 
 func swapToDir(path string) string {
 	wd, _ := os.Getwd()
@@ -115,6 +137,7 @@ func clean(c *cli.Context) error {
 }
 
 func list(c *cli.Context) error {
+/*
 	wd, _ := os.Getwd()
 	dir := todoDirectoryPath(wd)
 	tasks := task.FromDir(dir)
@@ -124,6 +147,15 @@ func list(c *cli.Context) error {
 		fmt.Println("Priority: ", t.Priority)
 		fmt.Println("")
 	}
+	return nil
+*/
+	clearTerm()
+	rows, cols := getTermSize()
+	fmt.Println(strings.Repeat("#", cols))
+	for i := 0; i < rows - 3; i++ {
+		fmt.Println("#" + strings.Repeat(" ", cols - 2) + "#")
+	}
+	fmt.Println(strings.Repeat("#", cols))
 	return nil
 }
 
