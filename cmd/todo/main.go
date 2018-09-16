@@ -29,7 +29,12 @@ func main() {
 		{
 			Name: "init",
 			Usage: "initialize empty .todo directory",
-			Action: todoInit,
+			Action: initialize,
+		},
+		{
+			Name: "clean",
+			Usage: "remove the .todo directory",
+			Action: clean,
 		},
 	}
 
@@ -42,6 +47,12 @@ func main() {
 /****************************
 *      Helper functions     *
 *****************************/
+
+func swapToDir(path string) string {
+	wd, _ := os.Getwd()
+	os.Chdir(path)
+	return wd
+}
 
 func todoDirectoryPath(path string) string {
 	return path + string(filepath.Separator) + ".todo"
@@ -58,10 +69,22 @@ func todoDirectoryExists(path string) bool {
 
 func initTodoDirectory(path string) error {
 	if !todoDirectoryExists(path) {
-		os.Mkdir(todoDirectoryPath(path), 0644)
+		oldWd := swapToDir(path)
+		defer swapToDir(oldWd)
+		os.Mkdir(".todo", 0755)
 		return nil
 	}
 	return errors.New("the todo directory has already been initialized!")
+}
+
+func removeTodoDirectory(path string) error {
+	if todoDirectoryExists(path) {
+		oldWd := swapToDir(path)
+		defer swapToDir(oldWd)
+		os.Remove(".todo")
+		return nil
+	}
+	return errors.New("the todo directory doesn't exist!")
 }
 
 func taskName(dir string, uuid string) string {
@@ -72,9 +95,18 @@ func taskName(dir string, uuid string) string {
 *      Action functions     *
 *****************************/
 
-func todoInit(c *cli.Context) error {
+func initialize(c *cli.Context) error {
 	wd, _ := os.Getwd()
 	err := initTodoDirectory(wd)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func clean(c *cli.Context) error {
+	wd, _ := os.Getwd()
+	err := removeTodoDirectory(wd)
 	if err != nil {
 		return err
 	}
