@@ -15,6 +15,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "todo"
 	app.Usage = "decide what to do next using your favorite scheduling algorithm"
+	app.Version = "0.0.1"
 	app.Commands = []cli.Command{
 		{
 			Name:   "list",
