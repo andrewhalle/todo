@@ -1,16 +1,19 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"os"
-	"os/exec"
-	"errors"
 	"path/filepath"
+	"fmt"
+	"bufio"
 	"strconv"
 	"strings"
 
+	//"github.com/nsf/termbox-go"
 	"github.com/urfave/cli"
+	"github.com/google/uuid"
+
 	"github.com/andrewhalle/todo/task"
 )
 
@@ -31,13 +34,13 @@ func main() {
 			Action: add,
 		},
 		{
-			Name: "init",
-			Usage: "initialize empty .todo directory",
+			Name:   "init",
+			Usage:  "initialize empty .todo directory",
 			Action: initialize,
 		},
 		{
-			Name: "clean",
-			Usage: "remove the .todo directory",
+			Name:   "clean",
+			Usage:  "remove the .todo directory",
 			Action: clean,
 		},
 	}
@@ -51,25 +54,6 @@ func main() {
 /****************************
 *      Helper functions     *
 *****************************/
-
-func getTermSize() (int, int) {
-	cmd := exec.Command("stty", "size")
-	cmd.Stdin = os.Stdin
-	output, _ := cmd.Output()
-	stty_output := strings.Split(strings.TrimSpace(string(output)), " ")
-	sizes := make([]int, 2)
-	for i, size := range stty_output {
-		sizes[i], _ = strconv.Atoi(size)
-	}
-	return sizes[0], sizes[1]
-}
-
-func clearTerm() {
-	cmd := exec.Command("tput", "clear")
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
-	cmd.Run()
-}
 
 func swapToDir(path string) string {
 	wd, _ := os.Getwd()
@@ -114,6 +98,12 @@ func taskName(dir string, uuid string) string {
 	return dir + string(filepath.Separator) + uuid + ".task"
 }
 
+func check(e error) {
+	if e != nil {
+		log.Fatal("error: ", e)
+	}
+}
+
 /****************************
 *      Action functions     *
 *****************************/
@@ -137,36 +127,72 @@ func clean(c *cli.Context) error {
 }
 
 func list(c *cli.Context) error {
-/*
-	wd, _ := os.Getwd()
-	dir := todoDirectoryPath(wd)
-	tasks := task.FromDir(dir)
-	for _, t := range tasks {
-		fmt.Println("Name: ", t.Name)
-		fmt.Println("Time to Complete: ", t.TimeToComplete)
-		fmt.Println("Priority: ", t.Priority)
-		fmt.Println("")
+		wd, _ := os.Getwd()
+		dir := todoDirectoryPath(wd)
+		tasks := task.FromDir(dir)
+		for _, t := range tasks {
+			fmt.Println("Name: ", t.Name)
+			fmt.Println("Time to Complete: ", t.TimeToComplete)
+			fmt.Println("Priority: ", t.Priority)
+			fmt.Println("")
+		}
+		return nil
+	/*
+	err := termbox.Init()
+	if err != nil {
+		log.Fatal("error: ", err)
 	}
-	return nil
-*/
-	clearTerm()
-	rows, cols := getTermSize()
-	fmt.Println(strings.Repeat("#", cols))
-	for i := 0; i < rows - 3; i++ {
-		fmt.Println("#" + strings.Repeat(" ", cols - 2) + "#")
+	defer termbox.Close()
+	w, h := termbox.Size()
+	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	for i := 0; i < w; i++ {
+		termbox.SetCell(i, 0, '#', termbox.ColorDefault, termbox.ColorDefault)
 	}
-	fmt.Println(strings.Repeat("#", cols))
+	for i := 1; i < h - 2; i++ {
+		termbox.SetCell(0, i, '#', termbox.ColorDefault, termbox.ColorDefault)
+		termbox.SetCell(w - 1, i, '#', termbox.ColorDefault, termbox.ColorDefault)
+	}
+	for i := 0; i < w; i++ {
+		termbox.SetCell(i, h - 2, '#', termbox.ColorDefault, termbox.ColorDefault)
+	}
+	termbox.SetCell(0, h - 1, ':', termbox.ColorDefault, termbox.ColorDefault)
+	termbox.SetCursor(w / 2, h / 2)
+	fmt.Println("hello world")
+	termbox.Flush()
+	time.Sleep(5 * time.Second)
 	return nil
+	*/
 }
 
 func add(c *cli.Context) error {
-	wd, _ := os.Getwd()
+	wd, err := os.Getwd()
+	check(err)
 	dir := todoDirectoryPath(wd)
+	inputReader := bufio.NewReader(os.Stdin)
+	fmt.Println("Name: ")
+	name, err := inputReader.ReadString('\n')
+	check(err)
+	fmt.Println("Time remaining: ")
+	ttlStr, err := inputReader.ReadString('\n')
+	check(err)
+	ttl, err := strconv.ParseFloat(strings.TrimSpace(ttlStr), 64)
+	check(err)
+	fmt.Println("Priority: ")
+	priorityStr, err := inputReader.ReadString('\n')
+	check(err)
+	priority, err := strconv.Atoi(strings.TrimSpace(priorityStr))
+	check(err)
 	t := task.Task{
-		Name: "added task",
-		TimeToComplete: 1,
-		Priority: 1,
+		Name:           name,
+		TimeToComplete: ttl,
+		Priority:       priority,
 	}
-	t.Save(taskName(dir, "test"))
+	id, err := uuid.NewUUID()
+	check(err)
+	filename := id.String()
+	if filename == "" {
+		log.Fatal("uuid not valid")
+	}
+	t.Save(taskName(dir, filename))
 	return nil
 }
