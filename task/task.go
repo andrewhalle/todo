@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 )
 
 type Task struct {
@@ -13,6 +14,8 @@ type Task struct {
 	TimeToComplete float64
 	Priority int
 }
+
+type Tasks []*Task
 
 func check(e error) {
 	if e != nil {
@@ -35,7 +38,7 @@ func Load(filename string) *Task {
 	return &t
 }
 
-func FromDir(dir string) []*Task {
+func FromDir(dir string) Tasks {
 	dirFile, err := os.Open(dir)
 	check(err)
 	taskFilenames, err := dirFile.Readdirnames(-1)
@@ -44,5 +47,30 @@ func FromDir(dir string) []*Task {
 		tasks = append(tasks, Load(dir + string(filepath.Separator) + filename))
 	}
 	return tasks
+}
+
+/****************************************************
+*                    Sorting                        *
+*****************************************************/
+
+type byTimeToComplete []*Task
+
+func (a byTimeToComplete) Len() int {
+	return len(a)
+}
+
+func (a byTimeToComplete) Swap(i, j int) {
+	tmp := a[i]
+	a[i] = a[j]
+	a[j] = tmp
+}
+
+func (a byTimeToComplete) Less(i, j int) bool {
+	return a[i].TimeToComplete < a[j].TimeToComplete
+}
+
+func (t Tasks) SJFSort() error {
+	sort.Sort(byTimeToComplete(t))
+	return nil
 }
 
