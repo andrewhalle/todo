@@ -10,14 +10,17 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/andrewhalle/todo/common"
 )
 
 type Task struct {
-	Name           string
-	TimeToComplete float64
-	Priority       int
+	Name                   string
+	ArrivalTime            time.Time
+	EstimatedTime          time.Duration
+	EstimatedTimeRemaining time.Duration
+	Priority               int
 }
 
 type Tasks []*Task
