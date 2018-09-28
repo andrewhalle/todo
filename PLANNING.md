@@ -6,6 +6,14 @@ keep track of items in a todo list, and sort them intelligently based on due dat
 
 store tasks as text files in a .todo directory, keep a metafile in .todo with the sorted order of the tasks according to the currently active scheduling algorithm.
 
+# Algorithms
+
+- FCFS
+- SJF
+- SRTF
+- Round Robin
+- Priority-based scheduling (equal priority break ties on arrival time)
+
 # Ideas
 
  - if there is a .todo in the working directory, use that by default. Otherwise, look for a .todo directory in the user's home directory. If that doesn't exist, create one if it makes sense. there should be flags to explicitly look at the local or global .todo, which should error if it doesn't exist. Another flag should allow specification of a path to the .todo, which should error if it doesn't exist
@@ -18,3 +26,5 @@ store tasks as text files in a .todo directory, keep a metafile in .todo with th
    - all commands should be less than 76 characters so as not to overflow the line
    - terminals less than 76 characters shouldn't be supported
    - choose between store size in config file for repeated access and have resize command to update **or** invoke `stty` on every invocation of `todo`
+
+ - interactive `todo work` which says what you're working on, plays an animation sometimes, alerts you (maybe with visible bell) when it's time to switch jobs, snooze button that holds the switch for some (configurable) amount of time (default something like 15 minutes), button to edit estimate of time the current job will take

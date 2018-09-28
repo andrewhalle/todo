@@ -1,19 +1,17 @@
 package main
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 
 	//"github.com/nsf/termbox-go"
 	"github.com/google/uuid"
 	"github.com/urfave/cli"
 
+	"github.com/andrewhalle/todo/common"
 	"github.com/andrewhalle/todo/task"
 )
 
@@ -46,9 +44,7 @@ func main() {
 	}
 
 	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
+	common.CheckDie(err)
 }
 
 /****************************
@@ -98,12 +94,6 @@ func taskName(dir string, uuid string) string {
 	return dir + string(filepath.Separator) + uuid + ".task"
 }
 
-func check(e error) {
-	if e != nil {
-		log.Fatal("error: ", e)
-	}
-}
-
 /****************************
 *      Action functions     *
 *****************************/
@@ -140,9 +130,7 @@ func list(c *cli.Context) error {
 	return nil
 	/*
 		err := termbox.Init()
-		if err != nil {
-			log.Fatal("error: ", err)
-		}
+		common.CheckDie(err)
 		defer termbox.Close()
 		w, h := termbox.Size()
 		termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
@@ -167,30 +155,11 @@ func list(c *cli.Context) error {
 
 func add(c *cli.Context) error {
 	wd, err := os.Getwd()
-	check(err)
+	common.CheckDie(err)
 	dir := todoDirectoryPath(wd)
-	inputReader := bufio.NewReader(os.Stdin)
-	fmt.Print("Name: ")
-	name, err := inputReader.ReadString('\n')
-	name = strings.TrimSpace(name)
-	check(err)
-	fmt.Print("Time remaining: ")
-	ttlStr, err := inputReader.ReadString('\n')
-	check(err)
-	ttl, err := strconv.ParseFloat(strings.TrimSpace(ttlStr), 64)
-	check(err)
-	fmt.Print("Priority: ")
-	priorityStr, err := inputReader.ReadString('\n')
-	check(err)
-	priority, err := strconv.Atoi(strings.TrimSpace(priorityStr))
-	check(err)
-	t := task.Task{
-		Name:           name,
-		TimeToComplete: ttl,
-		Priority:       priority,
-	}
+	t := task.FromUser()
 	id, err := uuid.NewUUID()
-	check(err)
+	common.CheckDie(err)
 	filename := id.String()
 	if filename == "" {
 		log.Fatal("uuid not valid")
