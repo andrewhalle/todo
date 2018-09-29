@@ -7,12 +7,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/andrewhalle/todo/common"
+	"github.com/andrewhalle/todo/internal/common"
 )
 
 type Task struct {
@@ -24,8 +23,6 @@ type Task struct {
 	Priority               int
 	StructVersion          int
 }
-
-type Tasks []*Task
 
 func (t *Task) Save(filename string) {
 	b, err := json.Marshal(*t)
@@ -40,17 +37,6 @@ func Load(filename string) *Task {
 	err = json.Unmarshal(b, &t)
 	common.CheckDie(err)
 	return &t
-}
-
-func FromDir(dir string) Tasks {
-	dirFile, err := os.Open(dir)
-	common.CheckDie(err)
-	taskFilenames, err := dirFile.Readdirnames(-1)
-	tasks := make([]*Task, 0, len(taskFilenames))
-	for _, filename := range taskFilenames {
-		tasks = append(tasks, Load(dir+string(filepath.Separator)+filename))
-	}
-	return tasks
 }
 
 func FromUser() *Task {
@@ -84,27 +70,15 @@ func FromUser() *Task {
 	return &t
 }
 
-/****************************************************
-*                    Sorting                        *
-*****************************************************/
+type Tasks []*Task
 
-type byEstimatedTimeRemaining []*Task
-
-func (a byEstimatedTimeRemaining) Len() int {
-	return len(a)
-}
-
-func (a byEstimatedTimeRemaining) Swap(i, j int) {
-	tmp := a[i]
-	a[i] = a[j]
-	a[j] = tmp
-}
-
-func (a byEstimatedTimeRemaining) Less(i, j int) bool {
-	return a[i].EstimatedTimeRemaining < a[j].EstimatedTimeRemaining
-}
-
-func (t Tasks) SRTFSort() error {
-	sort.Sort(byEstimatedTimeRemaining(t))
-	return nil
+func FromDir(dir string) Tasks {
+	dirFile, err := os.Open(dir)
+	common.CheckDie(err)
+	taskFilenames, err := dirFile.Readdirnames(-1)
+	tasks := make([]*Task, 0, len(taskFilenames))
+	for _, filename := range taskFilenames {
+		tasks = append(tasks, Load(dir+string(filepath.Separator)+filename))
+	}
+	return tasks
 }

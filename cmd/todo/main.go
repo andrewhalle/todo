@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/urfave/cli"
 
-	"github.com/andrewhalle/todo/common"
+	"github.com/andrewhalle/todo/internal/common"
 	"github.com/andrewhalle/todo/task"
 )
 

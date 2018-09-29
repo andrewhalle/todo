@@ -1,8 +1,9 @@
 package task
 
 import (
-	"testing"
+	"fmt"
 	"math/rand"
+	"testing"
 	"time"
 )
 
@@ -19,15 +20,21 @@ func randomFilename() string {
 func TestTask(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	filename := randomFilename()
+	now := time.Now()
 	start := Task{
-		Name: "First Task",
-		TimeToComplete: 1.0,
-		Priority: 1,
+		Name:          "First Task",
+		ArrivalTime:   now,
+		EstimatedTime: time.Duration(0),
+		Priority:      1,
 	}
 	start.Save(filename)
 	loaded := Load(filename)
-	if loaded.Name != "First Task" || loaded.TimeToComplete != 1.0 || loaded.Priority != 1 {
+	if loaded.Name != "First Task" ||
+		!loaded.ArrivalTime.Equal(now) ||
+		loaded.EstimatedTime != time.Duration(0) ||
+		loaded.Priority != 1 {
+
+		fmt.Println(loaded)
 		t.Fail()
 	}
 }
-
