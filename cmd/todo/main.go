@@ -120,10 +120,13 @@ func list(c *cli.Context) error {
 	wd, _ := os.Getwd()
 	dir := todoDirectoryPath(wd)
 	tasks := task.FromDir(dir)
-	tasks.SJFSort()
+	tasks.SRTFSort()
 	for _, t := range tasks {
 		fmt.Println("Name: ", t.Name)
-		fmt.Println("Time to Complete: ", t.TimeToComplete)
+		fmt.Println("Arrival Time: ", t.ArrivalTime)
+		fmt.Println("Estimated Time: ", t.EstimatedTime)
+		fmt.Println("Estimated Time Remaining: ", t.EstimatedTimeRemaining)
+		fmt.Println("Time Spent: ", t.TimeSpent)
 		fmt.Println("Priority: ", t.Priority)
 		fmt.Println("")
 	}

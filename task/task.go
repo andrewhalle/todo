@@ -20,7 +20,9 @@ type Task struct {
 	ArrivalTime            time.Time
 	EstimatedTime          time.Duration
 	EstimatedTimeRemaining time.Duration
+	TimeSpent              time.Duration
 	Priority               int
+	StructVersion          int
 }
 
 type Tasks []*Task
@@ -53,23 +55,31 @@ func FromDir(dir string) Tasks {
 
 func FromUser() *Task {
 	inputReader := bufio.NewReader(os.Stdin)
+
 	fmt.Print("Name: ")
 	name, err := inputReader.ReadString('\n')
 	name = strings.TrimSpace(name)
 	common.CheckDie(err)
-	fmt.Print("Time remaining: ")
-	ttlStr, err := inputReader.ReadString('\n')
+
+	fmt.Print("Estimated time to complete: ")
+	etStr, err := inputReader.ReadString('\n')
 	common.CheckDie(err)
-	ttl, err := strconv.ParseFloat(strings.TrimSpace(ttlStr), 64)
+	et, err := time.ParseDuration(strings.TrimSpace(etStr))
 	common.CheckDie(err)
+
 	fmt.Print("Priority: ")
 	priorityStr, err := inputReader.ReadString('\n')
 	common.CheckDie(err)
 	priority, err := strconv.Atoi(strings.TrimSpace(priorityStr))
+
 	t := Task{
-		Name:           name,
-		TimeToComplete: ttl,
-		Priority:       priority,
+		Name:                   name,
+		ArrivalTime:            time.Now(),
+		EstimatedTime:          et,
+		EstimatedTimeRemaining: et,
+		TimeSpent:              time.Duration(0),
+		Priority:               priority,
+		StructVersion:          1,
 	}
 	return &t
 }
@@ -78,23 +88,23 @@ func FromUser() *Task {
 *                    Sorting                        *
 *****************************************************/
 
-type byTimeToComplete []*Task
+type byEstimatedTimeRemaining []*Task
 
-func (a byTimeToComplete) Len() int {
+func (a byEstimatedTimeRemaining) Len() int {
 	return len(a)
 }
 
-func (a byTimeToComplete) Swap(i, j int) {
+func (a byEstimatedTimeRemaining) Swap(i, j int) {
 	tmp := a[i]
 	a[i] = a[j]
 	a[j] = tmp
 }
 
-func (a byTimeToComplete) Less(i, j int) bool {
-	return a[i].TimeToComplete < a[j].TimeToComplete
+func (a byEstimatedTimeRemaining) Less(i, j int) bool {
+	return a[i].EstimatedTimeRemaining < a[j].EstimatedTimeRemaining
 }
 
-func (t Tasks) SJFSort() error {
-	sort.Sort(byTimeToComplete(t))
+func (t Tasks) SRTFSort() error {
+	sort.Sort(byEstimatedTimeRemaining(t))
 	return nil
 }
